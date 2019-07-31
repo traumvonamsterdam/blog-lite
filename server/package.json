@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "babel-watch": "^7.0.0",
     "cors": "^2.8.5",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
@@ -13,6 +14,8 @@
     "parcel-bundler": "^1.12.3"
   },
   "scripts": {
-    "build": "parcel build app.js --target node"
+    "start": "babel-watch app.js",
+    "build": "babel src --out-dir lib",
+    "serve": "node lib/app.js"
   }
 }

@@ -22,4 +22,4 @@ ArticlesSchema.methods.toJSON = function() {
   };
 };
 
-mongoose.model("Articles", ArticlesSchema);
+export default ArticlesSchema

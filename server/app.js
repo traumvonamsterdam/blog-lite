@@ -4,18 +4,25 @@ import cors from "cors";
 import errorHandler from "errorhandler";
 import mongoose from "mongoose";
 import morgan from "morgan";
-import Bundler from 'par'
+import path from "path";
+import Bundler from "parcel-bundler";
 
-import Articles from './models/Articles'
+// Import routes and register models
+import routes from "./routes";
+require("./models/Articles");
 
 const isProduction = process.env.NODE_ENV === "production";
 
 const app = express();
 
-// Include parcel as middleware
-const bundler = new Bundler()
-app.use(bundler.middleware());
+// Add routes
+app.use(routes);
 
+// Include parcel as middleware
+// const bundler = new Bundler();
+// app.use(bundler.middleware());
+
+// Other middleware
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
@@ -35,15 +42,11 @@ if (!isProduction) {
 }
 
 mongoose.connect(
-  "mongodb+srv://jlfly12:wZSYV13*Fm@cluster0-jxjdp.mongodb.net/test?retryWrites=true&w=majority"
+  "mongodb+srv://jlfly12:wZSYV13*Fm@cluster0-jxjdp.mongodb.net/test?retryWrites=true&w=majority",
+  { useNewUrlParser: true }
 );
+
 mongoose.set("debug", true);
-
-// Add models
-
-
-// Add routes
-app.use(require("./routes"));
 
 app.use((req, res, next) => {
   const err = new Error("Not Found");
@@ -75,6 +78,4 @@ app.use((err, req, res) => {
   });
 });
 
-const server = app.listen(4000, () =>
-  console.log("Server started on http://localhost:4000")
-);
+app.listen(4000, () => console.log("Server started on http://localhost:4000"));
