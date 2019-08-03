@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "babel-watch": "^7.0.0",
+    "cors": "^2.8.5",
+    "errorhandler": "^1.5.1",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
+    "mongoose": "^5.6.7",
+    "morgan": "^1.9.1",
+    "parcel-bundler": "^1.12.3"
+  },
+  "scripts": {
+    "start": "babel-watch app.js",
+    "build": "babel src --out-dir lib",
+    "serve": "node lib/app.js"
+  }
+}
