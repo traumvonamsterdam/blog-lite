@@ -1,8 +1,7 @@
-import mongoose from "mongoose";
+
 import express from "express";
-import ArticlesSchema from "../../models/Articles";
+import "../../models/Articles";
 const router = express.Router();
-const Articles = mongoose.model("Articles", ArticlesSchema);
 
 router.post("/", (req, res, next) => {
   const { body } = req;

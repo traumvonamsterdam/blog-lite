@@ -5,11 +5,9 @@ import errorHandler from "errorhandler";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import path from "path";
-import Bundler from "parcel-bundler";
 
-// Import routes and register models
 import routes from "./routes";
-require("./models/Articles");
+import httpErrorHandling from "./handling/httpErrorHandling";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -18,16 +16,11 @@ const app = express();
 // Add routes
 app.use(routes);
 
-// Include parcel as middleware
-// const bundler = new Bundler();
-// app.use(bundler.middleware());
-
 // Other middleware
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
     secret: "LightBlog",
@@ -39,6 +32,9 @@ app.use(
 
 if (!isProduction) {
   app.use(errorHandler());
+} else {
+  app.use(express.static(path.join(__dirname, "client/dist")));
+  res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"));
 }
 
 mongoose.connect(
@@ -48,34 +44,12 @@ mongoose.connect(
 
 mongoose.set("debug", true);
 
-app.use((req, res, next) => {
-  const err = new Error("Not Found");
-  err.status = 404;
-  next(err);
-});
+httpErrorHandling(app, isProduction);
 
-if (!isProduction) {
-  app.use((err, req, res) => {
-    res.status(err.status || 500);
-
-    res.json({
-      errors: {
-        message: err.message,
-        error: err
-      }
-    });
-  });
+if (isProduction) {
+  app.listen(process.env.PORT);
+} else {
+  app.listen(4000, () =>
+    console.log(`Server started on http://localhost:4000`)
+  );
 }
-
-app.use((err, req, res) => {
-  res.status(err.status || 500);
-
-  res.json({
-    errors: {
-      message: err.message,
-      error: {}
-    }
-  });
-});
-
-app.listen(4000, () => console.log("Server started on http://localhost:4000"));
