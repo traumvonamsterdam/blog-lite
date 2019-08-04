@@ -14,10 +14,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const app = express();
 
-// Add routes
-app.use(routes);
-
-// Other middleware
+// Add middleware
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
@@ -31,16 +28,18 @@ app.use(
   })
 );
 
-// if (!isProduction) {
-//   app.use(errorHandler());
-// } else {
+// Add routes (must be done AFTER cors is applied)
+app.use(routes);
+
+if (!isProduction) {
+  app.use(errorHandler());
+}
 app.use(express.static(path.join(__dirname, "client/dist")));
 app.get("/", (req, res) => {
   res.render("index", {
     title: "Homepage"
   });
 });
-// }
 
 mongoose.connect(
   `mongodb+srv://${process.env.MONGODB_USERNAME}:${

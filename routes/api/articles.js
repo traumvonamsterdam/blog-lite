@@ -1,6 +1,5 @@
-
 import express from "express";
-import "../../models/Articles";
+import Articles from "../../models/Articles";
 const router = express.Router();
 
 router.post("/", (req, res, next) => {
