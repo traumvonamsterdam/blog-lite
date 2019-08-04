@@ -5,6 +5,7 @@ import errorHandler from "errorhandler";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import path from "path";
+import "dotenv/config";
 
 import routes from "./routes";
 import httpErrorHandling from "./handling/httpErrorHandling";
@@ -42,7 +43,9 @@ app.get("/", (req, res) => {
 // }
 
 mongoose.connect(
-  "mongodb+srv://jlfly12:wZSYV13*Fm@cluster0-jxjdp.mongodb.net/test?retryWrites=true&w=majority",
+  `mongodb+srv://${process.env.MONGODB_USERNAME}:${
+    process.env.MONGODB_PASSWORD
+  }@cluster0-jxjdp.mongodb.net/test?retryWrites=true&w=majority`,
   { useNewUrlParser: true }
 );
 
@@ -53,7 +56,5 @@ httpErrorHandling(app, isProduction);
 if (isProduction) {
   app.listen(process.env.PORT);
 } else {
-  app.listen(4000, () =>
-    console.log(`Server started on http://localhost:4000`)
-  );
+  app.listen(4000, () => console.log("Server running on PORT 4000"));
 }
