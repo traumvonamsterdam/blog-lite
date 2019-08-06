@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useGlobalState } from "../../GlobalState/StateProvider";
 
@@ -7,7 +7,19 @@ const Form = () => {
   const [body, setBody] = useState("");
   const [author, setAuthor] = useState("");
 
-  const [{ articles }, dispatch] = useGlobalState();
+  const [{ articles, articleToEdit }, dispatch] = useGlobalState();
+
+  useEffect(() => {
+    if (articleToEdit) {
+      setTitle(articleToEdit.title);
+      setBody(articleToEdit.body);
+      setAuthor(articleToEdit.author);
+    } else {
+      setTitle('');
+      setBody('');
+      setAuthor('')
+    }
+  }, [JSON.stringify(articleToEdit)]);
 
   const handleChangeField = (key, event) => {
     const fields = {
@@ -19,19 +31,36 @@ const Form = () => {
   };
 
   const handleSubmit = () => {
-    axios
-      .post("http://localhost:4000/api/articles", {
-        title,
-        body,
-        author
-      })
-      .then(res => axios("http://localhost:4000/api/articles"))
-      .then(res =>
-        dispatch({ type: "fetchArticles", articles: res.data.articles })
-      )
-      .catch(err => {
-        throw err;
-      });
+    if (!articleToEdit) {
+      axios
+        .post("http://localhost:4000/api/articles", {
+          title,
+          body,
+          author
+        })
+        .then(res => axios("http://localhost:4000/api/articles"))
+        .then(res =>
+          dispatch({ type: "fetchArticles", articles: res.data.articles })
+        )
+        .catch(err => {
+          throw err;
+        });
+    } else {
+      axios
+        .patch(`http://localhost:4000/api/articles/${articleToEdit._id}`, {
+          title,
+          body,
+          author
+        })
+        .then(res => dispatch({ type: "finishEdit" }))
+        .then(res => axios("http://localhost:4000/api/articles"))
+        .then(res =>
+          dispatch({ type: "fetchArticles", articles: res.data.articles })
+        )
+        .catch(err => {
+          throw err;
+        });
+    }
   };
 
   return (
@@ -55,7 +84,7 @@ const Form = () => {
         placeholder="Article Author"
       />
       <button onClick={handleSubmit} className="btn btn-primary float-right">
-        Submit
+        {articleToEdit ? "Update" : "Submit"}
       </button>
     </div>
   );

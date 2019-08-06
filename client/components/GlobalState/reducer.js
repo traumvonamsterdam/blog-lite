@@ -2,7 +2,8 @@ export default (state, action) => {
   const { type } = action;
   const reducerObj = {
     fetchArticles: { ...state, articles: action.articles },
-    addArticle: { ...state, articles: [...state.articles, action.newArticle] }
+    setEdit: { ...state, articleToEdit: action.articleToEdit },
+    finishEdit: { ...state, articleToEdit: null }
   };
 
   if (type in reducerObj) {

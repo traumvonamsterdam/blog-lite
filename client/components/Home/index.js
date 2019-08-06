@@ -17,9 +17,13 @@ const Home = () => {
       });
   }, []);
 
-  const handleDelete = id => {
+  const handleEdit = article => {
+    dispatch({ type: "setEdit", articleToEdit: article });
+  };
+
+  const handleDelete = _id => {
     return axios
-      .delete(`http://localhost:4000/api/articles/${id}`)
+      .delete(`http://localhost:4000/api/articles/${_id}`)
       .then(() => axios("http://localhost:4000/api/articles"))
       .then(res =>
         dispatch({ type: "fetchArticles", articles: res.data.articles })
@@ -41,7 +45,12 @@ const Home = () => {
       </div>
       <div className="card-footer">
         <div className="row">
-          <button className="btn btn-primary mx-3">Edit</button>
+          <button
+            onClick={() => handleEdit(article)}
+            className="btn btn-primary mx-3"
+          >
+            Edit
+          </button>
           <button
             onClick={() => handleDelete(article._id)}
             className="btn btn-danger"

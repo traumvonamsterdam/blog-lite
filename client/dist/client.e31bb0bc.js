@@ -29629,7 +29629,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _default = {
-  articles: []
+  articles: [],
+  articleToEdit: null
 };
 exports.default = _default;
 },{}],"components/GlobalState/reducer.js":[function(require,module,exports) {
@@ -29639,14 +29640,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
@@ -29658,8 +29651,11 @@ var _default = function _default(state, action) {
     fetchArticles: _objectSpread({}, state, {
       articles: action.articles
     }),
-    addArticle: _objectSpread({}, state, {
-      articles: [].concat(_toConsumableArray(state.articles), [action.newArticle])
+    setEdit: _objectSpread({}, state, {
+      articleToEdit: action.articleToEdit
+    }),
+    finishEdit: _objectSpread({}, state, {
+      articleToEdit: null
     })
   };
 
@@ -36101,8 +36097,22 @@ var Form = function Form() {
 
   var _useGlobalState = (0, _StateProvider.useGlobalState)(),
       _useGlobalState2 = _slicedToArray(_useGlobalState, 2),
-      articles = _useGlobalState2[0].articles,
+      _useGlobalState2$ = _useGlobalState2[0],
+      articles = _useGlobalState2$.articles,
+      articleToEdit = _useGlobalState2$.articleToEdit,
       dispatch = _useGlobalState2[1];
+
+  (0, _react.useEffect)(function () {
+    if (articleToEdit) {
+      setTitle(articleToEdit.title);
+      setBody(articleToEdit.body);
+      setAuthor(articleToEdit.author);
+    } else {
+      setTitle('');
+      setBody('');
+      setAuthor('');
+    }
+  }, [JSON.stringify(articleToEdit)]);
 
   var handleChangeField = function handleChangeField(key, event) {
     var fields = {
@@ -36114,20 +36124,41 @@ var Form = function Form() {
   };
 
   var handleSubmit = function handleSubmit() {
-    _axios.default.post("http://localhost:4000/api/articles", {
-      title: title,
-      body: body,
-      author: author
-    }).then(function (res) {
-      return (0, _axios.default)("http://localhost:4000/api/articles");
-    }).then(function (res) {
-      return dispatch({
-        type: "fetchArticles",
-        articles: res.data.articles
+    if (!articleToEdit) {
+      _axios.default.post("http://localhost:4000/api/articles", {
+        title: title,
+        body: body,
+        author: author
+      }).then(function (res) {
+        return (0, _axios.default)("http://localhost:4000/api/articles");
+      }).then(function (res) {
+        return dispatch({
+          type: "fetchArticles",
+          articles: res.data.articles
+        });
+      }).catch(function (err) {
+        throw err;
       });
-    }).catch(function (err) {
-      throw err;
-    });
+    } else {
+      _axios.default.patch("http://localhost:4000/api/articles/".concat(articleToEdit._id), {
+        title: title,
+        body: body,
+        author: author
+      }).then(function (res) {
+        return dispatch({
+          type: "finishEdit"
+        });
+      }).then(function (res) {
+        return (0, _axios.default)("http://localhost:4000/api/articles");
+      }).then(function (res) {
+        return dispatch({
+          type: "fetchArticles",
+          articles: res.data.articles
+        });
+      }).catch(function (err) {
+        throw err;
+      });
+    }
   };
 
   return _react.default.createElement("div", {
@@ -36156,7 +36187,7 @@ var Form = function Form() {
   }), _react.default.createElement("button", {
     onClick: handleSubmit,
     className: "btn btn-primary float-right"
-  }, "Submit"));
+  }, articleToEdit ? "Update" : "Submit"));
 };
 
 var _default = Form;
@@ -36224,8 +36255,15 @@ var Home = function Home() {
     });
   }, []);
 
-  var handleDelete = function handleDelete(id) {
-    return _axios.default.delete("http://localhost:4000/api/articles/".concat(id)).then(function () {
+  var handleEdit = function handleEdit(article) {
+    dispatch({
+      type: "setEdit",
+      articleToEdit: article
+    });
+  };
+
+  var handleDelete = function handleDelete(_id) {
+    return _axios.default.delete("http://localhost:4000/api/articles/".concat(_id)).then(function () {
       return (0, _axios.default)("http://localhost:4000/api/articles");
     }).then(function (res) {
       return dispatch({
@@ -36252,6 +36290,9 @@ var Home = function Home() {
     }, _react.default.createElement("div", {
       className: "row"
     }, _react.default.createElement("button", {
+      onClick: function onClick() {
+        return handleEdit(article);
+      },
       className: "btn btn-primary mx-3"
     }, "Edit"), _react.default.createElement("button", {
       onClick: function onClick() {
