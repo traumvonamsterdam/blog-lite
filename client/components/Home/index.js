@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import moment from "moment";
-import axios from "axios";
+import { fetchArticles, deleteArticle } from "../helpers/actions";
 import { useGlobalState } from "../GlobalState/StateProvider";
 import { Form } from "../../components/Article";
 
@@ -8,13 +8,9 @@ const Home = () => {
   const [{ articles }, dispatch] = useGlobalState();
 
   useEffect(() => {
-    axios("http://localhost:4000/api/articles")
-      .then(res =>
-        dispatch({ type: "fetchArticles", articles: res.data.articles })
-      )
-      .catch(err => {
-        throw err;
-      });
+    fetchArticles().then(articles =>
+      dispatch({ type: "updateArticles", articles })
+    );
   }, []);
 
   const handleEdit = article => {
@@ -22,15 +18,9 @@ const Home = () => {
   };
 
   const handleDelete = _id => {
-    return axios
-      .delete(`http://localhost:4000/api/articles/${_id}`)
-      .then(() => axios("http://localhost:4000/api/articles"))
-      .then(res =>
-        dispatch({ type: "fetchArticles", articles: res.data.articles })
-      )
-      .catch(err => {
-        throw err;
-      });
+    deleteArticle(_id)
+      .then(fetchArticles)
+      .then(articles => dispatch({ type: "updateArticles", articles }));
   };
 
   const articleDiv = article => (
@@ -67,13 +57,16 @@ const Home = () => {
       <div className="container">
         <div className="row pt-5">
           <div className="col-12 col-lg-6 offset-lg-3">
-            <h1 className="text-center">LightBlog</h1>
+            <h1 className="text-center">BlogLite</h1>
           </div>
           <Form />
         </div>
         <div className="row pt-5">
           <div className="col-12 col-lg-6 offset-lg-3">
-            {articles.map(article => articleDiv(article))}
+            {console.log(articles)}
+            {Array.isArray(articles)
+              ? articles.map(article => articleDiv(article))
+              : null}
           </div>
         </div>
       </div>

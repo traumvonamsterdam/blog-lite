@@ -29648,19 +29648,25 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var _default = function _default(state, action) {
   var type = action.type;
   var reducerObj = {
-    fetchArticles: _objectSpread({}, state, {
-      articles: action.articles
-    }),
-    setEdit: _objectSpread({}, state, {
-      articleToEdit: action.articleToEdit
-    }),
-    finishEdit: _objectSpread({}, state, {
-      articleToEdit: null
-    })
+    updateArticles: function updateArticles() {
+      return _objectSpread({}, state, {
+        articles: action.articles
+      });
+    },
+    setEdit: function setEdit() {
+      return _objectSpread({}, state, {
+        articleToEdit: action.articleToEdit
+      });
+    },
+    finishEdit: function finishEdit() {
+      return _objectSpread({}, state, {
+        articleToEdit: null
+      });
+    }
   };
 
   if (type in reducerObj) {
-    return reducerObj[type];
+    return reducerObj[type]();
   } else {
     return state;
   }
@@ -36053,7 +36059,445 @@ module.exports.default = axios;
 
 },{"./utils":"node_modules/axios/lib/utils.js","./helpers/bind":"node_modules/axios/lib/helpers/bind.js","./core/Axios":"node_modules/axios/lib/core/Axios.js","./core/mergeConfig":"node_modules/axios/lib/core/mergeConfig.js","./defaults":"node_modules/axios/lib/defaults.js","./cancel/Cancel":"node_modules/axios/lib/cancel/Cancel.js","./cancel/CancelToken":"node_modules/axios/lib/cancel/CancelToken.js","./cancel/isCancel":"node_modules/axios/lib/cancel/isCancel.js","./helpers/spread":"node_modules/axios/lib/helpers/spread.js"}],"node_modules/axios/index.js":[function(require,module,exports) {
 module.exports = require('./lib/axios');
-},{"./lib/axios":"node_modules/axios/lib/axios.js"}],"components/Article/Form/index.js":[function(require,module,exports) {
+},{"./lib/axios":"node_modules/axios/lib/axios.js"}],"../../../../AppData/Local/Yarn/Data/global/node_modules/parcel-bundler/src/builtins/_empty.js":[function(require,module,exports) {
+
+},{}],"../../../../AppData/Local/Yarn/Data/global/node_modules/path-browserify/index.js":[function(require,module,exports) {
+var process = require("process");
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes, empty elements, or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts, allowAboveRoot) {
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var last = parts[i];
+    if (last === '.') {
+      parts.splice(i, 1);
+    } else if (last === '..') {
+      parts.splice(i, 1);
+      up++;
+    } else if (up) {
+      parts.splice(i, 1);
+      up--;
+    }
+  }
+
+  // if the path is allowed to go above the root, restore leading ..s
+  if (allowAboveRoot) {
+    for (; up--; up) {
+      parts.unshift('..');
+    }
+  }
+
+  return parts;
+}
+
+// Split a filename into [root, dir, basename, ext], unix version
+// 'root' is just a slash, or nothing.
+var splitPathRe =
+    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+var splitPath = function(filename) {
+  return splitPathRe.exec(filename).slice(1);
+};
+
+// path.resolve([from ...], to)
+// posix version
+exports.resolve = function() {
+  var resolvedPath = '',
+      resolvedAbsolute = false;
+
+  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    var path = (i >= 0) ? arguments[i] : process.cwd();
+
+    // Skip empty and invalid entries
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
+    } else if (!path) {
+      continue;
+    }
+
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path.charAt(0) === '/';
+  }
+
+  // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+  // Normalize the path
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+    return !!p;
+  }), !resolvedAbsolute).join('/');
+
+  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+};
+
+// path.normalize(path)
+// posix version
+exports.normalize = function(path) {
+  var isAbsolute = exports.isAbsolute(path),
+      trailingSlash = substr(path, -1) === '/';
+
+  // Normalize the path
+  path = normalizeArray(filter(path.split('/'), function(p) {
+    return !!p;
+  }), !isAbsolute).join('/');
+
+  if (!path && !isAbsolute) {
+    path = '.';
+  }
+  if (path && trailingSlash) {
+    path += '/';
+  }
+
+  return (isAbsolute ? '/' : '') + path;
+};
+
+// posix version
+exports.isAbsolute = function(path) {
+  return path.charAt(0) === '/';
+};
+
+// posix version
+exports.join = function() {
+  var paths = Array.prototype.slice.call(arguments, 0);
+  return exports.normalize(filter(paths, function(p, index) {
+    if (typeof p !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
+    }
+    return p;
+  }).join('/'));
+};
+
+
+// path.relative(from, to)
+// posix version
+exports.relative = function(from, to) {
+  from = exports.resolve(from).substr(1);
+  to = exports.resolve(to).substr(1);
+
+  function trim(arr) {
+    var start = 0;
+    for (; start < arr.length; start++) {
+      if (arr[start] !== '') break;
+    }
+
+    var end = arr.length - 1;
+    for (; end >= 0; end--) {
+      if (arr[end] !== '') break;
+    }
+
+    if (start > end) return [];
+    return arr.slice(start, end - start + 1);
+  }
+
+  var fromParts = trim(from.split('/'));
+  var toParts = trim(to.split('/'));
+
+  var length = Math.min(fromParts.length, toParts.length);
+  var samePartsLength = length;
+  for (var i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+
+  var outputParts = [];
+  for (var i = samePartsLength; i < fromParts.length; i++) {
+    outputParts.push('..');
+  }
+
+  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+  return outputParts.join('/');
+};
+
+exports.sep = '/';
+exports.delimiter = ':';
+
+exports.dirname = function(path) {
+  var result = splitPath(path),
+      root = result[0],
+      dir = result[1];
+
+  if (!root && !dir) {
+    // No dirname whatsoever
+    return '.';
+  }
+
+  if (dir) {
+    // It has a dirname, strip trailing slash
+    dir = dir.substr(0, dir.length - 1);
+  }
+
+  return root + dir;
+};
+
+
+exports.basename = function(path, ext) {
+  var f = splitPath(path)[2];
+  // TODO: make this comparison case-insensitive on windows?
+  if (ext && f.substr(-1 * ext.length) === ext) {
+    f = f.substr(0, f.length - ext.length);
+  }
+  return f;
+};
+
+
+exports.extname = function(path) {
+  return splitPath(path)[3];
+};
+
+function filter (xs, f) {
+    if (xs.filter) return xs.filter(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+        if (f(xs[i], i, xs)) res.push(xs[i]);
+    }
+    return res;
+}
+
+// String.prototype.substr - negative index don't work in IE8
+var substr = 'ab'.substr(-1) === 'b'
+    ? function (str, start, len) { return str.substr(start, len) }
+    : function (str, start, len) {
+        if (start < 0) start = str.length + start;
+        return str.substr(start, len);
+    }
+;
+
+},{"process":"../../../../AppData/Local/Yarn/Data/global/node_modules/process/browser.js"}],"node_modules/dotenv/lib/main.js":[function(require,module,exports) {
+var process = require("process");
+/*::
+
+type DotenvParseOptions = {
+  debug?: boolean
+}
+
+// keys and values from src
+type DotenvParseOutput = { [string]: string }
+
+type DotenvConfigOptions = {
+  path?: string, // path to .env file
+  encoding?: string, // encoding of .env file
+  debug?: string // turn on logging for debugging purposes
+}
+
+type DotenvConfigOutput = {
+  parsed?: DotenvParseOutput,
+  error?: Error
+}
+
+*/
+var fs = require('fs');
+
+var path = require('path');
+
+function log(message
+/*: string */
+) {
+  console.log("[dotenv][DEBUG] ".concat(message));
+} // Parses src into an Object
+
+
+function parse(src
+/*: string | Buffer */
+, options
+/*: ?DotenvParseOptions */
+)
+/*: DotenvParseOutput */
+{
+  var debug = Boolean(options && options.debug);
+  var obj = {}; // convert Buffers before splitting into lines and processing
+
+  src.toString().split('\n').forEach(function (line, idx) {
+    // matching "KEY' and 'VAL' in 'KEY=VAL'
+    var keyValueArr = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/); // matched?
+
+    if (keyValueArr != null) {
+      var key = keyValueArr[1]; // default undefined or missing values to empty string
+
+      var value = keyValueArr[2] || ''; // expand newlines in quoted values
+
+      var len = value ? value.length : 0;
+
+      if (len > 0 && value.charAt(0) === '"' && value.charAt(len - 1) === '"') {
+        value = value.replace(/\\n/gm, '\n');
+      } // remove any surrounding quotes and extra spaces
+
+
+      value = value.replace(/(^['"]|['"]$)/g, '').trim();
+      obj[key] = value;
+    } else if (debug) {
+      log("did not match key and value when parsing line ".concat(idx + 1, ": ").concat(line));
+    }
+  });
+  return obj;
+} // Populates process.env from .env file
+
+
+function config(options
+/*: ?DotenvConfigOptions */
+)
+/*: DotenvConfigOutput */
+{
+  var dotenvPath = path.resolve(process.cwd(), '.env');
+  var encoding
+  /*: string */
+  = 'utf8';
+  var debug = false;
+
+  if (options) {
+    if (options.path != null) {
+      dotenvPath = options.path;
+    }
+
+    if (options.encoding != null) {
+      encoding = options.encoding;
+    }
+
+    if (options.debug != null) {
+      debug = true;
+    }
+  }
+
+  try {
+    // specifying an encoding returns a string instead of a buffer
+    var parsed = parse(fs.readFileSync(dotenvPath, {
+      encoding: encoding
+    }), {
+      debug: debug
+    });
+    Object.keys(parsed).forEach(function (key) {
+      if (!process.env.hasOwnProperty(key)) {
+        process.env[key] = parsed[key];
+      } else if (debug) {
+        log("\"".concat(key, "\" is already defined in `process.env` and will not be overwritten"));
+      }
+    });
+    return {
+      parsed: parsed
+    };
+  } catch (e) {
+    return {
+      error: e
+    };
+  }
+}
+
+module.exports.config = config;
+module.exports.load = config;
+module.exports.parse = parse;
+},{"fs":"../../../../AppData/Local/Yarn/Data/global/node_modules/parcel-bundler/src/builtins/_empty.js","path":"../../../../AppData/Local/Yarn/Data/global/node_modules/path-browserify/index.js","process":"../../../../AppData/Local/Yarn/Data/global/node_modules/process/browser.js"}],"node_modules/dotenv/lib/env-options.js":[function(require,module,exports) {
+// ../config.js accepts options via environment variables
+var options = {};
+
+if (undefined) {
+  options.encoding = undefined;
+}
+
+if (undefined) {
+  options.path = undefined;
+}
+
+if (undefined) {
+  options.debug = undefined;
+}
+
+module.exports = options;
+},{}],"node_modules/dotenv/lib/cli-options.js":[function(require,module,exports) {
+var re = /^dotenv_config_(encoding|path|debug)=(.+)$/;
+
+module.exports = function optionMatcher(args
+/*: Array<string> */
+) {
+  return args.reduce(function (acc, cur) {
+    var matches = cur.match(re);
+
+    if (matches) {
+      acc[matches[1]] = matches[2];
+    }
+
+    return acc;
+  }, {});
+};
+},{}],"node_modules/dotenv/config.js":[function(require,module,exports) {
+var process = require("process");
+(function () {
+  require('./lib/main').config(Object.assign({}, require('./lib/env-options'), require('./lib/cli-options')(process.argv)));
+})();
+},{"./lib/main":"node_modules/dotenv/lib/main.js","./lib/env-options":"node_modules/dotenv/lib/env-options.js","./lib/cli-options":"node_modules/dotenv/lib/cli-options.js","process":"../../../../AppData/Local/Yarn/Data/global/node_modules/process/browser.js"}],"components/helpers/actions.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.editArticle = exports.submitArticle = exports.deleteArticle = exports.fetchArticles = void 0;
+
+var _axios = _interopRequireDefault(require("axios"));
+
+require("dotenv/config");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var PORT = undefined || 4000;
+
+var fetchArticles = function fetchArticles() {
+  return (0, _axios.default)("http://localhost:".concat(PORT, "/api/articles")).then(function (res) {
+    return res.data.articles;
+  }).catch(function (err) {
+    throw err;
+  });
+};
+
+exports.fetchArticles = fetchArticles;
+
+var deleteArticle = function deleteArticle(_id) {
+  return _axios.default.delete("http://localhost:".concat(PORT, "/api/articles/").concat(_id)).catch(function (err) {
+    throw err;
+  });
+};
+
+exports.deleteArticle = deleteArticle;
+
+var submitArticle = function submitArticle(newArticle) {
+  return _axios.default.post("http://localhost:".concat(PORT, "/api/articles"), newArticle).catch(function (err) {
+    throw err;
+  });
+};
+
+exports.submitArticle = submitArticle;
+
+var editArticle = function editArticle(articleToEdit, newArticle) {
+  return _axios.default.patch("http://localhost:".concat(PORT, "/api/articles/").concat(articleToEdit._id), newArticle).catch(function (err) {
+    throw err;
+  });
+};
+
+exports.editArticle = editArticle;
+},{"axios":"node_modules/axios/index.js","dotenv/config":"node_modules/dotenv/config.js"}],"components/Article/Form/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -36063,11 +36507,9 @@ exports.default = void 0;
 
 var _react = _interopRequireWildcard(require("react"));
 
-var _axios = _interopRequireDefault(require("axios"));
+var _actions = require("../../helpers/actions");
 
 var _StateProvider = require("../../GlobalState/StateProvider");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
@@ -36095,6 +36537,12 @@ var Form = function Form() {
       author = _useState6[0],
       setAuthor = _useState6[1];
 
+  var emptyFields = function emptyFields() {
+    setTitle("");
+    setBody("");
+    setAuthor("");
+  };
+
   var _useGlobalState = (0, _StateProvider.useGlobalState)(),
       _useGlobalState2 = _slicedToArray(_useGlobalState, 2),
       _useGlobalState2$ = _useGlobalState2[0],
@@ -36108,9 +36556,7 @@ var Form = function Form() {
       setBody(articleToEdit.body);
       setAuthor(articleToEdit.author);
     } else {
-      setTitle('');
-      setBody('');
-      setAuthor('');
+      emptyFields();
     }
   }, [JSON.stringify(articleToEdit)]);
 
@@ -36124,39 +36570,25 @@ var Form = function Form() {
   };
 
   var handleSubmit = function handleSubmit() {
+    var newArticle = {
+      title: title,
+      body: body,
+      author: author
+    };
+
     if (!articleToEdit) {
-      _axios.default.post("http://localhost:4000/api/articles", {
-        title: title,
-        body: body,
-        author: author
-      }).then(function (res) {
-        return (0, _axios.default)("http://localhost:4000/api/articles");
-      }).then(function (res) {
+      (0, _actions.submitArticle)(newArticle).then(emptyFields).then(_actions.fetchArticles).then(function (articles) {
         return dispatch({
-          type: "fetchArticles",
-          articles: res.data.articles
+          type: "updateArticles",
+          articles: articles
         });
-      }).catch(function (err) {
-        throw err;
       });
     } else {
-      _axios.default.patch("http://localhost:4000/api/articles/".concat(articleToEdit._id), {
-        title: title,
-        body: body,
-        author: author
-      }).then(function (res) {
+      (0, _actions.editArticle)(articleToEdit, newArticle).then(emptyFields).then(_actions.fetchArticles).then(function (articles) {
         return dispatch({
-          type: "finishEdit"
+          type: "updateArticles",
+          articles: articles
         });
-      }).then(function (res) {
-        return (0, _axios.default)("http://localhost:4000/api/articles");
-      }).then(function (res) {
-        return dispatch({
-          type: "fetchArticles",
-          articles: res.data.articles
-        });
-      }).catch(function (err) {
-        throw err;
       });
     }
   };
@@ -36192,7 +36624,7 @@ var Form = function Form() {
 
 var _default = Form;
 exports.default = _default;
-},{"react":"node_modules/react/index.js","axios":"node_modules/axios/index.js","../../GlobalState/StateProvider":"components/GlobalState/StateProvider.js"}],"components/Article/index.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","../../helpers/actions":"components/helpers/actions.js","../../GlobalState/StateProvider":"components/GlobalState/StateProvider.js"}],"components/Article/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -36220,7 +36652,7 @@ var _react = _interopRequireWildcard(require("react"));
 
 var _moment = _interopRequireDefault(require("moment"));
 
-var _axios = _interopRequireDefault(require("axios"));
+var _actions = require("../helpers/actions");
 
 var _StateProvider = require("../GlobalState/StateProvider");
 
@@ -36245,13 +36677,11 @@ var Home = function Home() {
       dispatch = _useGlobalState2[1];
 
   (0, _react.useEffect)(function () {
-    (0, _axios.default)("http://localhost:4000/api/articles").then(function (res) {
+    (0, _actions.fetchArticles)().then(function (articles) {
       return dispatch({
-        type: "fetchArticles",
-        articles: res.data.articles
+        type: "updateArticles",
+        articles: articles
       });
-    }).catch(function (err) {
-      throw err;
     });
   }, []);
 
@@ -36263,15 +36693,11 @@ var Home = function Home() {
   };
 
   var handleDelete = function handleDelete(_id) {
-    return _axios.default.delete("http://localhost:4000/api/articles/".concat(_id)).then(function () {
-      return (0, _axios.default)("http://localhost:4000/api/articles");
-    }).then(function (res) {
+    (0, _actions.deleteArticle)(_id).then(_actions.fetchArticles).then(function (articles) {
       return dispatch({
-        type: "fetchArticles",
-        articles: res.data.articles
+        type: "updateArticles",
+        articles: articles
       });
-    }).catch(function (err) {
-      throw err;
     });
   };
 
@@ -36310,18 +36736,18 @@ var Home = function Home() {
     className: "col-12 col-lg-6 offset-lg-3"
   }, _react.default.createElement("h1", {
     className: "text-center"
-  }, "LightBlog")), _react.default.createElement(_Article.Form, null)), _react.default.createElement("div", {
+  }, "BlogLite")), _react.default.createElement(_Article.Form, null)), _react.default.createElement("div", {
     className: "row pt-5"
   }, _react.default.createElement("div", {
     className: "col-12 col-lg-6 offset-lg-3"
-  }, articles.map(function (article) {
+  }, console.log(articles), Array.isArray(articles) ? articles.map(function (article) {
     return articleDiv(article);
-  })))));
+  }) : null))));
 };
 
 var _default = Home;
 exports.default = _default;
-},{"react":"node_modules/react/index.js","moment":"node_modules/moment/moment.js","axios":"node_modules/axios/index.js","../GlobalState/StateProvider":"components/GlobalState/StateProvider.js","../../components/Article":"components/Article/index.js"}],"components/index.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","moment":"node_modules/moment/moment.js","../helpers/actions":"components/helpers/actions.js","../GlobalState/StateProvider":"components/GlobalState/StateProvider.js","../../components/Article":"components/Article/index.js"}],"components/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -36476,7 +36902,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49858" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64305" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  fetchArticles,
+  submitArticle,
+  editArticle
+} from "../../helpers/actions";
 import { useGlobalState } from "../../GlobalState/StateProvider";
 
 const Form = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [author, setAuthor] = useState("");
+
+  const emptyFields = () => {
+    setTitle("");
+    setBody("");
+    setAuthor("");
+  };
 
   const [{ articles, articleToEdit }, dispatch] = useGlobalState();
 
@@ -15,9 +25,7 @@ const Form = () => {
       setBody(articleToEdit.body);
       setAuthor(articleToEdit.author);
     } else {
-      setTitle('');
-      setBody('');
-      setAuthor('')
+      emptyFields();
     }
   }, [JSON.stringify(articleToEdit)]);
 
@@ -31,35 +39,17 @@ const Form = () => {
   };
 
   const handleSubmit = () => {
+    const newArticle = { title, body, author };
     if (!articleToEdit) {
-      axios
-        .post("http://localhost:4000/api/articles", {
-          title,
-          body,
-          author
-        })
-        .then(res => axios("http://localhost:4000/api/articles"))
-        .then(res =>
-          dispatch({ type: "fetchArticles", articles: res.data.articles })
-        )
-        .catch(err => {
-          throw err;
-        });
+      submitArticle(newArticle)
+        .then(emptyFields)
+        .then(fetchArticles)
+        .then(articles => dispatch({ type: "updateArticles", articles }));
     } else {
-      axios
-        .patch(`http://localhost:4000/api/articles/${articleToEdit._id}`, {
-          title,
-          body,
-          author
-        })
-        .then(res => dispatch({ type: "finishEdit" }))
-        .then(res => axios("http://localhost:4000/api/articles"))
-        .then(res =>
-          dispatch({ type: "fetchArticles", articles: res.data.articles })
-        )
-        .catch(err => {
-          throw err;
-        });
+      editArticle(articleToEdit, newArticle)
+        .then(emptyFields)
+        .then(fetchArticles)
+        .then(articles => dispatch({ type: "updateArticles", articles }));
     }
   };
 
