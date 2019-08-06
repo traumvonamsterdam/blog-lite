@@ -18,5 +18,6 @@
     "start": "babel-watch app.js",
     "build": "babel src --out-dir lib",
     "serve": "node lib/app.js"
-  }
+  },
+  "devDependencies": {}
 }

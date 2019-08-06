@@ -1,5 +1,5 @@
-const presets = [
-  "@babel/preset-react"
-];
+// const presets = ["@babel/preset-env", "@babel/preset-react"];
 
-export { presets };
+// const plugins = ["@babel/plugin-transform-runtime"];
+
+// module.exports = { presets, plugins };

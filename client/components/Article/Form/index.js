@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useGlobalState } from "../../GlobalState/StateProvider";
 
 const Form = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [author, setAuthor] = useState("");
+
+  const [{ articles }, dispatch] = useGlobalState();
 
   const handleChangeField = (key, event) => {
     const fields = {
@@ -15,12 +18,21 @@ const Form = () => {
     fields[key](event.target.value);
   };
 
-  const handleSubmit = () =>
-    axios.post("http://localhost:4000/api/articles", {
-      title,
-      body,
-      author
-    });
+  const handleSubmit = () => {
+    axios
+      .post("http://localhost:4000/api/articles", {
+        title,
+        body,
+        author
+      })
+      .then(res => axios("http://localhost:4000/api/articles"))
+      .then(res =>
+        dispatch({ type: "fetchArticles", articles: res.data.articles })
+      )
+      .catch(err => {
+        throw err;
+      });
+  };
 
   return (
     <div className="col-12 col-lg-6 offset-lg-3">
