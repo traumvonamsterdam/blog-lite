@@ -1,4 +1,6 @@
 export default {
   articles: [],
-  articleToEdit: null
+  articleToEdit: null,
+  submitting: false,
+  refetch: true
 };

@@ -5,13 +5,16 @@ import { useGlobalState } from "../GlobalState/StateProvider";
 import { Form } from "../../components/Article";
 
 const Home = () => {
-  const [{ articles }, dispatch] = useGlobalState();
+  const [{ articles, refetch }, dispatch] = useGlobalState();
 
   useEffect(() => {
-    fetchArticles().then(articles =>
-      dispatch({ type: "updateArticles", articles })
-    );
-  }, []);
+    console.log({ refetch });
+    if (refetch) {
+      fetchArticles().then(articles =>
+        dispatch({ type: "updateArticles", articles })
+      );
+    }
+  }, [refetch]);
 
   const handleEdit = article => {
     dispatch({ type: "setEdit", articleToEdit: article });
@@ -63,7 +66,6 @@ const Home = () => {
         </div>
         <div className="row pt-5">
           <div className="col-12 col-lg-6 offset-lg-3">
-            {console.log(articles)}
             {Array.isArray(articles)
               ? articles.map(article => articleDiv(article))
               : null}

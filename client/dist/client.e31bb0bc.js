@@ -29630,7 +29630,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var _default = {
   articles: [],
-  articleToEdit: null
+  articleToEdit: null,
+  submitting: false,
+  refetch: true
 };
 exports.default = _default;
 },{}],"components/GlobalState/reducer.js":[function(require,module,exports) {
@@ -29646,11 +29648,16 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var _default = function _default(state, action) {
-  var type = action.type;
   var reducerObj = {
     updateArticles: function updateArticles() {
       return _objectSpread({}, state, {
-        articles: action.articles
+        articles: action.articles,
+        refetch: false
+      });
+    },
+    refetchArticles: function refetchArticles() {
+      return _objectSpread({}, state, {
+        refetch: true
       });
     },
     setEdit: function setEdit() {
@@ -29660,10 +29667,17 @@ var _default = function _default(state, action) {
     },
     finishEdit: function finishEdit() {
       return _objectSpread({}, state, {
-        articleToEdit: null
+        articleToEdit: null,
+        submitting: false
+      });
+    },
+    submitStatus: function submitStatus() {
+      return _objectSpread({}, state, {
+        submitting: action.submitting
       });
     }
   };
+  var type = action.type;
 
   if (type in reducerObj) {
     return reducerObj[type]();
@@ -36537,18 +36551,18 @@ var Form = function Form() {
       author = _useState6[0],
       setAuthor = _useState6[1];
 
+  var _useGlobalState = (0, _StateProvider.useGlobalState)(),
+      _useGlobalState2 = _slicedToArray(_useGlobalState, 2),
+      _useGlobalState2$ = _useGlobalState2[0],
+      articleToEdit = _useGlobalState2$.articleToEdit,
+      submitting = _useGlobalState2$.submitting,
+      dispatch = _useGlobalState2[1];
+
   var emptyFields = function emptyFields() {
     setTitle("");
     setBody("");
     setAuthor("");
   };
-
-  var _useGlobalState = (0, _StateProvider.useGlobalState)(),
-      _useGlobalState2 = _slicedToArray(_useGlobalState, 2),
-      _useGlobalState2$ = _useGlobalState2[0],
-      articles = _useGlobalState2$.articles,
-      articleToEdit = _useGlobalState2$.articleToEdit,
-      dispatch = _useGlobalState2[1];
 
   (0, _react.useEffect)(function () {
     if (articleToEdit) {
@@ -36569,6 +36583,12 @@ var Form = function Form() {
     fields[key](event.target.value);
   };
 
+  var handleCancel = function handleCancel() {
+    dispatch({
+      type: "finishEdit"
+    });
+  };
+
   var handleSubmit = function handleSubmit() {
     var newArticle = {
       title: title,
@@ -36577,17 +36597,23 @@ var Form = function Form() {
     };
 
     if (!articleToEdit) {
-      (0, _actions.submitArticle)(newArticle).then(emptyFields).then(_actions.fetchArticles).then(function (articles) {
+      (0, _actions.submitArticle)(newArticle).then(function () {
         return dispatch({
-          type: "updateArticles",
-          articles: articles
+          type: "refetchArticles"
+        });
+      }).then(function () {
+        return dispatch({
+          type: "finishEdit"
         });
       });
     } else {
-      (0, _actions.editArticle)(articleToEdit, newArticle).then(emptyFields).then(_actions.fetchArticles).then(function (articles) {
+      (0, _actions.editArticle)(articleToEdit, newArticle).then(function () {
         return dispatch({
-          type: "updateArticles",
-          articles: articles
+          type: "refetchArticles"
+        });
+      }).then(function () {
+        return dispatch({
+          type: "finishEdit"
         });
       });
     }
@@ -36595,7 +36621,7 @@ var Form = function Form() {
 
   return _react.default.createElement("div", {
     className: "col-12 col-lg-6 offset-lg-3"
-  }, _react.default.createElement("input", {
+  }, submitting || articleToEdit ? _react.default.createElement(_react.default.Fragment, null, _react.default.createElement("input", {
     onChange: function onChange(ev) {
       return handleChangeField("title", ev);
     },
@@ -36619,7 +36645,21 @@ var Form = function Form() {
   }), _react.default.createElement("button", {
     onClick: handleSubmit,
     className: "btn btn-primary float-right"
-  }, articleToEdit ? "Update" : "Submit"));
+  }, articleToEdit ? "Update" : "Submit"), _react.default.createElement("button", {
+    onClick: handleCancel,
+    className: "btn btn-default float-right"
+  }, "Cancel")) : _react.default.createElement("button", {
+    onClick: function onClick() {
+      return dispatch({
+        type: "submitStatus",
+        submitting: true
+      });
+    },
+    className: "btn btn-primary float-right",
+    style: {
+      float: "center"
+    }
+  }, "New Article"));
 };
 
 var _default = Form;
@@ -36673,17 +36713,25 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var Home = function Home() {
   var _useGlobalState = (0, _StateProvider.useGlobalState)(),
       _useGlobalState2 = _slicedToArray(_useGlobalState, 2),
-      articles = _useGlobalState2[0].articles,
+      _useGlobalState2$ = _useGlobalState2[0],
+      articles = _useGlobalState2$.articles,
+      refetch = _useGlobalState2$.refetch,
       dispatch = _useGlobalState2[1];
 
   (0, _react.useEffect)(function () {
-    (0, _actions.fetchArticles)().then(function (articles) {
-      return dispatch({
-        type: "updateArticles",
-        articles: articles
-      });
+    console.log({
+      refetch: refetch
     });
-  }, []);
+
+    if (refetch) {
+      (0, _actions.fetchArticles)().then(function (articles) {
+        return dispatch({
+          type: "updateArticles",
+          articles: articles
+        });
+      });
+    }
+  }, [refetch]);
 
   var handleEdit = function handleEdit(article) {
     dispatch({
@@ -36740,7 +36788,7 @@ var Home = function Home() {
     className: "row pt-5"
   }, _react.default.createElement("div", {
     className: "col-12 col-lg-6 offset-lg-3"
-  }, console.log(articles), Array.isArray(articles) ? articles.map(function (article) {
+  }, Array.isArray(articles) ? articles.map(function (article) {
     return articleDiv(article);
   }) : null))));
 };
